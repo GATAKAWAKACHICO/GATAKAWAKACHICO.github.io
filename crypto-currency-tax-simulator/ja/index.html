@@ -5,29 +5,41 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>仮想通貨課税額シミュレーター</title>
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:site" content="@flickr" />
   <meta name="twitter:title" content="仮想通貨課税額シミュレーター" />
   <meta name="twitter:description" content="本シミュレーターでは仮想通貨（ビットコインなど）で得た利益に対する課税額の目安を計算することができます。" />
   <meta name="twitter:image" content="http://virtual-currency-simulator-ja.teyandy.com/img/kabu_happy.png" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
   <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 </head>
 <body>
+  <div id="fb-root"></div>
+  <script>(function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = 'https://connect.facebook.net/ja_JP/sdk.js#xfbml=1&version=v2.11&appId=140257880084943';
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));</script>
   <div class="container">
     <div class="row">
       <div class="col-md-12">
         <header class="text-center">
           <h2>仮想通貨課税額シミュレーター</h2>
-          <img src="img/kabu_happy.png">
+          <img src="img/kabu_happy.png"><br>
+          <ul class="share-buttons">
+            <li class="twitter"><a href="https://twitter.com/share?ref_src=twsrc%5Etfw" class="twitter-share-button" data-lang="ja" data-show-count="false">Tweet</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script></li>
+            <li class="facebook"><div class="fb-share-button" data-href="https://gatakawakachico.github.io/crypto-currency-tax-simulator/ja/" data-layout="button_count" data-size="small" data-mobile-iframe="true"><a class="fb-xfbml-parse-ignore" target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fgatakawakachico.github.io%2Fcrypto-currency-tax-simulator%2Fja%2F&amp;src=sdkpreparse">シェア</a></div></li>
+            <li class="hatena"><a href="http://b.hatena.ne.jp/entry/" class="hatena-bookmark-button" data-hatena-bookmark-layout="basic-label-counter" data-hatena-bookmark-lang="ja" title="このエントリーをはてなブックマークに追加"><img src="https://b.st-hatena.com/images/entry-button/button-only@2x.png" alt="このエントリーをはてなブックマークに追加" width="20" height="20" style="border: none;" /></a><script type="text/javascript" src="https://b.st-hatena.com/js/bookmark_button.js" charset="utf-8" async="async"></script></a>
+          </div>
         </header>
       </div>
-      <div class="col-md-6">
+      <div class="col-md-12">
         <p>
-          本シミュレーターでは仮想通貨（ビットコインなど）で得た利益に対する課税額の目安を計算することができます。<br>
-          下記入力項目に入力いただくことで、課税額の目安が簡単にわかります。<br>
-          ビットコインという部分は、他の通貨（俗に言う「アルトコイン」（イーサリアム、ライトコイン、モナーコイン））に置き換え、同じように計算できます。
+          本シミュレーターでは仮想通貨（ビットコインなど）で得た利益に対する課税額の目安を計算することができます。下記項目に入力いただくことで、課税額の目安が簡単にわかります。<br>
+          「ビットコイン」と記載されている部分は、他の通貨（俗に言う「アルトコイン」【イーサリアム、リップル、モナーコイン等】）に置き換え、同じように計算できます。
         </p>
       </div>
       <div class="col-md-12">
@@ -45,7 +57,7 @@
             </div>
             <div class="form-group">
               <label for="selling-yen"></label>
-              <small id="selling-yen-help" class="form-text text-muted">使用（売却・商品代金の支払い・他のコインとの交換・マイニングなど）したビットコインの金額を円ベースで記入して下さい。</small>
+              <small id="selling-yen-help" class="form-text text-muted">使用（売却・商品代金の支払い・アルトコインとの交換・マイニングなど）したビットコインの金額を円ベースで記入して下さい。</small>
               <input type="number" class="form-control" id="selling-yen" aria-describedby="selling-yen-help" placeholder="110000" value="110000">
             </div>
             <div class="form-group">
@@ -60,14 +72,15 @@
             </div>
             <div class="form-group">
               <label for="deduction"></label>
-              <small id="deduction-help" class="form-text text-muted">あなたの所得控除額（円）を入力してください。分からない場合はそのままにしてください。その場合、計算結果はおおよその課税額となります。</small>
+              <small id="deduction-help" class="form-text text-muted">あなたの所得控除額（円）を入力してください。分からない場合はそのままにしてください。</small>
               <input type="number" class="form-control" id="deduction" aria-describedby="deduction-help" placeholder="380000" value="380000">
             </div>
             <button type="button" class="btn btn-primary" id="calculate">計算する</button>
             <div class="text-danger">
               <ul>
-                <li>本シミュレーターは<a href="https://www.nta.go.jp/shiraberu/zeiho-kaishaku/joho-zeikaishaku/shotoku/shinkoku/171127/01.pdf" target="_blank">仮想通貨に関する所得の計算方法等について（情報）</a>に基づき課税額を計算します。</li>
+                <li>本シミュレーターは国税庁公表の<a href="https://www.nta.go.jp/shiraberu/zeiho-kaishaku/joho-zeikaishaku/shotoku/shinkoku/171127/01.pdf" target="_blank">仮想通貨に関する所得の計算方法等について（情報）</a>に基づき課税額を計算します。</li>
                 <li>算出された税額は、実際の税額とは異なることがありますので、正確な税額を把握されたい場合は、顧問会計士・税理士、税についての相談窓口などに必ずご確認ください。</li>
+                <li>入力いただいたデータはサーバーに保存されることはございませんので安心してご利用いただけます。</li>
               </ul>
             </div>
           </form>
@@ -142,6 +155,6 @@
         $("#net-coin-income").html(insertComma(coin_income - coin_tax_charge));
         $('#result-modal').modal('show');
       });
-    </script>
-  </body>
-  </html>
+      </script>
+    </body>
+    </html>
