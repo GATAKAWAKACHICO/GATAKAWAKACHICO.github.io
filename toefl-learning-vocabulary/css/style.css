@@ -11,3 +11,6 @@
   line-height: 0;
   margin-right: 5px;
 }
+#words-to-review {
+  word-wrap: break-word;
+}
