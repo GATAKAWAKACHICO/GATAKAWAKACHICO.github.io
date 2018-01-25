@@ -70,11 +70,23 @@
           <div class="text-center">
             <button id="show-btn" type="button" class="btn btn-primary" onclick="showMeaning();">意味を表示する</button>
             <div id="meaning" style="display:none;"><!-- 意味を表示 --></div>
-            <button id="incorrect-btn" type="button" class="btn btn-danger next-btn" style="display:none;" onclick="showKeywords(result,false,keyword);">不正解</button>
-            <button id="correct-btn" type="button" class="btn btn-success next-btn" style="display:none;" onclick="showKeywords(result,true);">正解</button>
+            <button id="incorrect-btn" type="button" class="btn btn-danger next-btn" style="display:none;" onclick="showKeywords(intensiveMode ? wordsToReviews : result, false, keyword, meaning);">不正解</button>
+            <button id="correct-btn" type="button" class="btn btn-success next-btn" style="display:none;" onclick="showKeywords(intensiveMode ? wordsToReviews : result,true);">正解</button>
           </div>
           <div id="score" class="text-center">
             <span id="point">0</span> &#47; <span id="total">0</span> &nbsp;これまでの正答率：<span id="percentage"></span>&percnt;
+          </div>
+          <div>
+            <p>インテンシブモード：</p>
+            <ul class="list-inline">
+              <li>
+                <div id="switch-intensive-mode" class="btn-group btn-toggle">
+                  <button class="btn btn-xs btn-light">ON</button>
+                  <button class="btn btn-xs btn-success active">OFF</button>
+                </div>
+              </li>
+            </ul>
+            <p class="small">※ONにすると不正解の単語のみを繰り返し出題します。</p>
           </div>
           <div id="reviews">
             <p>あなたが復習すべき単語の一覧はこちらです。</p>
@@ -83,93 +95,119 @@
           <div id="ad">
             <!-- place ad here -->
           </div>
+        </div>
       </div>
     </div>
-  </div>
-  <script>
-  function getCSV(){
-    var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
-    req.open("get", "csv/words.csv", true); // アクセスするファイルを指定
-    req.send(null); // HTTPリクエストの発行
+    <script>
+    function getCSV(){
+      var req = new XMLHttpRequest(); // HTTPでファイルを読み込むためのXMLHttpRrequestオブジェクトを生成
+      req.open("get", "csv/words.csv", true); // アクセスするファイルを指定
+      req.send(null); // HTTPリクエストの発行
 
-    // レスポンスが返ってきたらconvertCSVtoArray()を呼ぶ
-    req.onload = function(){
-      convertCSVtoArray(req.responseText); // 渡されるのは読み込んだCSVデータ
-    }
-  }
-
-  var result = []; // 最終的な二次元配列を入れるための配列
-  var nextbtns = document.getElementsByClassName('next-btn');
-  var keyword;
-  var total = 0; // 試行回数
-  var point = 0; // 正解数
-  var wordsToReviews = []; // 復習すべき単語
-  var percentage = 0;
-
-  // 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
-  function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列として渡される
-    var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
-
-    // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
-    for(var i = 0; i < tmp.length; i++){
-      result[i] = tmp[i].split(',');
-    }
-    showKeywords(result, false);
-  }
-
-  // min から max までの乱整数を返す関数
-  function getRandomInt(min, max) {
-    return Math.floor( Math.random() * (max - min + 1) ) + min;
-  }
-
-  function showKeywords(array, answer, faildKeyword){
-    var keywordIndex = getRandomInt(1, array.length - 1);
-    keyword = result[keywordIndex][0];
-    var meaning = result[keywordIndex][1];
-    document.getElementById('keyword').textContent = keyword;
-    document.getElementById('meaning').style.display = "none";
-    document.getElementById('meaning').textContent = meaning;
-    document.getElementById('show-btn').style.display = "";
-    for (i = 0; i < nextbtns.length; i++) {
-      nextbtns[i].style.display = 'none';
-    }
-    total += 1;
-    document.getElementById('total').textContent = total;
-    if(answer){
-      point += 1;
-      document.getElementById('point').textContent = point;
-    }
-    if(total - 1 != 0) {
-      percentage = point / (total - 1) * 100;
-      document.getElementById('percentage').textContent = Math.floor(percentage);
-      if(!answer){
-        wordsToReviews.push(faildKeyword);
-        wordsToReviews = wordsToReviews.filter(function(x, i, self){
-          return self.indexOf(x) === i;
-        });
-        document.getElementById('words-to-review').textContent = wordsToReviews.toString();
+      // レスポンスが返ってきたらconvertCSVtoArray()を呼ぶ
+      req.onload = function(){
+        convertCSVtoArray(req.responseText); // 渡されるのは読み込んだCSVデータ
+        intensiveModeSwitch();
       }
     }
-  }
 
-  function showMeaning(){
-    document.getElementById('meaning').style.display = "";
-    document.getElementById('meaning').style.color = "red";
-    document.getElementById('show-btn').style.display = "none";
-    for (i = 0; i < nextbtns.length; i++) {
-      nextbtns[i].style.display = '';
+    var result = []; // 最終的な二次元配列を入れるための配列
+    var nextbtns = document.getElementsByClassName('next-btn');
+    var keyword;
+    var meaning;
+    var total = 0; // 試行回数
+    var point = 0; // 正解数
+    var wordsToReviewsKeywords = []; // 復習すべき単語
+    var wordsToReviews = []; // 復習すべき単語と意味（二次元配列）
+    var percentage = 0;
+    var intensiveMode = false;
+
+    // 読み込んだCSVデータを二次元配列に変換する関数convertCSVtoArray()の定義
+    function convertCSVtoArray(str){ // 読み込んだCSVデータが文字列として渡される
+      var tmp = str.split("\n"); // 改行を区切り文字として行を要素とした配列を生成
+
+      // 各行ごとにカンマで区切った文字列を要素とした二次元配列を生成
+      for(var i = 0; i < tmp.length; i++){
+        result[i] = tmp[i].split(',');
+      }
+      showKeywords(result, false);
     }
-  }
 
-  function pronounce(){
-    var u = new SpeechSynthesisUtterance();
-    u.text = keyword;
-    u.lang = 'en-US';
-    u.rate = 1.1;
-    speechSynthesis.speak(u);
-  }
+    // min から max までの乱整数を返す関数
+    function getRandomInt(min, max) {
+      return Math.floor( Math.random() * (max - min + 1) ) + min;
+    }
 
-  getCSV(); //最初に実行される
-  </script>
-</body>
-</html>
+    function showKeywords(array, answer, failedKeyword, failedMeaning){
+      var keywordIndex = getRandomInt(1, array.length - 1);
+      keyword = array[keywordIndex][0];
+      meaning = array[keywordIndex][1];
+      document.getElementById('keyword').textContent = keyword;
+      document.getElementById('meaning').style.display = "none";
+      document.getElementById('meaning').textContent = meaning;
+      document.getElementById('show-btn').style.display = "";
+      for (i = 0; i < nextbtns.length; i++) {
+        nextbtns[i].style.display = 'none';
+      }
+      total += 1;
+      document.getElementById('total').textContent = total;
+      if(answer){
+        point += 1;
+        document.getElementById('point').textContent = point;
+      }
+      if(total - 1 != 0) {
+        percentage = point / (total - 1) * 100;
+        document.getElementById('percentage').textContent = Math.floor(percentage);
+        if(!answer){
+          wordsToReviews.push([failedKeyword,failedMeaning]);
+          wordsToReviewsKeywords.push(failedKeyword);
+          wordsToReviews = wordsToReviews.filter(function(x, i, self){
+            return self.indexOf(x) === i;
+          });
+          wordsToReviewsKeywords = wordsToReviewsKeywords.filter(function(x, i, self){
+            return self.indexOf(x) === i;
+          });
+          document.getElementById('words-to-review').textContent = wordsToReviewsKeywords.toString();
+        }
+      }
+    }
+
+    function showMeaning(){
+      document.getElementById('meaning').style.display = "";
+      document.getElementById('meaning').style.color = "red";
+      document.getElementById('show-btn').style.display = "none";
+      for (i = 0; i < nextbtns.length; i++) {
+        nextbtns[i].style.display = '';
+      }
+    }
+
+    function pronounce(){
+      var u = new SpeechSynthesisUtterance();
+      u.text = keyword;
+      u.lang = 'en-US';
+      u.rate = 1.1;
+      speechSynthesis.speak(u);
+    }
+
+    function intensiveModeSwitch(){
+      var switchButton = document.getElementById('switch-intensive-mode');
+      switchButton.addEventListener('click', function(event){
+        var switchBtns = switchButton.getElementsByClassName('btn');
+        for (i = 0; i < switchBtns.length; i++) {
+          switchBtns[i].classList.toggle('active');
+          switchBtns[i].classList.toggle('btn-success');
+          switchBtns[i].classList.toggle('btn-light');
+        }
+        if(switchBtns[0].classList.contains('active')){
+          intensiveMode = true;
+        }
+        if(switchBtns[1].classList.contains('active')){
+          intensiveMode = false;
+        }
+      });
+    }
+
+    getCSV(); //最初に実行される
+    </script>
+  </body>
+  </html>
