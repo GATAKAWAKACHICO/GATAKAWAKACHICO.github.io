@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Application NTV 2018</title>
+  <meta name="description" content="Application NTV 2018">
+  <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+  <script src="javascripts/aframe-particle-system-component.min.js"></script>
+  <script src="javascripts/aframe-animation-component.min.js"></script>
+</head>
+<body>
+  <a-scene id="main-scene" light="defaultLightsEnabled:false;">
+    <a-entity light="type: ambient; color: #BBB; intensity: 0.2;"></a-entity>
+    <a-entity position="0 1.6 0" rotation="0 200 0">
+      <a-camera></a-camera>
+    </a-entity>
+    <a-assets>
+      <img id="shiodome-background" src="images/background_original-compressor.jpg">
+      <audio id="hue" src="sounds/firework_hue.wav"></audio>
+      <audio id="exp" src="sounds/firework_exp.wav"></audio>
+    </a-assets>
+    <a-entity id="sky" geometry="primitive: sphere;
+            radius: 5000;"
+            material="src: #shiodome-background;
+                      side: back;"></a-entity>
+    <a-text font="kelsonsans" value="Shiodome, Tokyo" width="6" position="3.3 0.25 2.5" rotation="0 -130 0"></a-text>
+  </a-scene>
+  <script>
+    var scene = document.getElementById("main-scene");
+
+    var fireWorkObject = function(color, from, delay, duration, repeat){
+      clearFireWorks();
+      this.entityId = 'firework-' + getUniqueStr();
+      this.color = color;
+      this.from = from;
+      var position = from.split(" ").map(Number);
+      var to = [position[0], position[1] + getRandomArbitrary(25, 70), position[2]].join(" ");
+      this.to = to;
+      this.delay = delay;
+      this.entity = generateFirework(this.entityId, from, to, color, duration);
+      this.fragment = generateFragment(this.entity);
+    }
+
+    function clearFireWorks(){
+      var fireworks = document.getElementsByClassName('firework');
+      for(var i = 0; i < fireworks.length - 1; i++){
+        if(fireworks[i].dataset.animationcompleted){
+          scene.removeChild(fireworks[i]);
+        }
+      }
+    }
+
+    function generateFirework(id, from, to, color, duration){
+      var firework = document.createElement('a-entity');
+      firework.id = id;
+      firework.className = 'firework';
+      firework.dataset.animationcompleted = false;
+      firework.setAttribute('position', from);
+      firework.setAttribute('geometry', 'primitive: sphere; radius: 0.2');
+      firework.setAttribute('material', 'shader: flat; color: ' + color);
+      firework.setAttribute('animation','property: position;' +
+      'from:' + from + ';' +
+      'to:' + to + ';' +
+      'dur:' + duration + ';'
+      );
+      firework.setAttribute('sound','src: #hue;volume:10;autoplay: true;poolSize: 3');
+      return firework;
+    }
+
+    function generateFragment(entity){
+      var fragment = document.createDocumentFragment();
+      fragment.appendChild(entity);
+      return fragment;
+    }
+
+    function generateSpark(firework){
+      var spark = document.createElement('a-entity');
+      spark.className = 'spark';
+      spark.dataset.relatedfirework = firework.entityId;
+      spark.setAttribute('position', firework.to);
+      var color = firework.color;
+      spark.setAttribute('sound','src: #exp;volume:5;autoplay: true;poolSize: 3;on: model-loaded');
+      spark.setAttribute('light', 'type: hemisphere; intensity:0.25; color: ' + color);
+      spark.setAttribute('particle-system','preset: default; color:' + color + ';rotationAxis: x; rotationAngle: 90; velocityValue:1 10 1; velocitySpread:30 30 30; size: 1;duration: 1; texture: images/line.png; maxAge:1');
+      return spark;
+    }
+
+    function getUniqueStr(someString){
+      var originalString = 1000;
+      if (someString) originalString = someString;
+      return new Date().getTime().toString(16)  + Math.floor(originalString*Math.random()).toString(16)
+    }
+
+    function invertColor(hex) {
+      if (hex.indexOf('#') === 0) {
+        hex = hex.slice(1);
+      }
+      // convert 3-digit hex to 6-digits.
+      if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+      }
+      if (hex.length !== 6) {
+        throw new Error('Invalid HEX color.');
+      }
+      // invert color components
+      var r = (255 - parseInt(hex.slice(0, 2), 16)).toString(16),
+      g = (255 - parseInt(hex.slice(2, 4), 16)).toString(16),
+      b = (255 - parseInt(hex.slice(4, 6), 16)).toString(16);
+      // pad each with zeros and return
+      return '#' + padZero(r) + padZero(g) + padZero(b);
+    }
+
+    function padZero(str, len) {
+      len = len || 2;
+      var zeros = new Array(len).join('0');
+      return (zeros + str).slice(-len);
+    }
+
+    function getRandomColor() {
+      var letters = '0123456789ABCDEF';
+      var color = '#';
+      for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    function getRandomPosition(){
+      var x = getRandomArbitrary(50, 230);
+      var y = 0;
+      var z = 150;
+      var position = [x,y,z];
+      return position.join(" ");
+    }
+
+    function getRandomArbitrary(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function getRandomDuration(){
+      return getRandomArbitrary(3000, 4500);
+    }
+
+    function getRandomDelay(){
+      return getRandomArbitrary(3000, 5000);
+    }
+
+    document.querySelector('#sky').addEventListener('loaded', function () {
+      console.log("THE SKY LOADED.");
+      setInterval(
+          function(){
+            var firework = new fireWorkObject(getRandomColor(),getRandomPosition(),1, getRandomDuration(), '0');
+            // firework.animation.addEventListener('animationend', animationListener(firework));
+            scene.appendChild(firework.fragment);
+            $firework = document.getElementById(firework.entityId);
+            $firework.addEventListener('animationcomplete', function(){
+              $firework.dataset.animationcompleted = true;
+              console.log("animationcomplete.");
+              var spark = generateSpark(firework);
+              scene.appendChild(spark);
+              setTimeout(function(){
+                scene.removeChild(spark);
+              }, 2000);
+            });
+          },
+          getRandomDelay()
+      );
+    });
+  </script>
+</body>
+</html>
