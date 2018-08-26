@@ -18,4 +18,4 @@ github_username:  GATAKAWAKACHICO
 google-analytics:
   id: ""
 
-exclude: ['package.json','src','node_modules','ApplicationNTV2018','bottle-otegami-assets','crypto-currency-tax-simulator','toefl-learning-vocabulary']
+exclude: ['package.json','src','node_modules']
