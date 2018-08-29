@@ -16,6 +16,6 @@ github_username:  GATAKAWAKACHICO
 
 # Google-analytics
 google-analytics:
-  id: ""
+  id: "UA-50860585-11"
 
 exclude: ['package.json','src','node_modules']
