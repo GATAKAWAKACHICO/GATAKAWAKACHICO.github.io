@@ -3,6 +3,7 @@ title: Masaki Wakatake
 description: Simple is best. There is no place like home.
 # baseurl: "/particle" # the subpath of your site, e.g. /blog
 # url: "localhost:3000" # the base hostname & protocol for your site e.g. http://willianjusten.com.br
+cdn: https://dlaxc27sxq2rg.cloudfront.net
 
 # User settings
 username: Masaki Wakatake
